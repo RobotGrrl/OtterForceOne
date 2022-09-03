@@ -25,6 +25,11 @@
 #define PWM_Res    8
 #define PWM_Freq   1000
 
+// TODO: adjust the code for these vals
+#define WATERJET_THRUSTER_PWM_MIN 1000
+#define WATERJET_THRUSTER_PWM_MAX 2000
+
+
 Servo suction;
 Servo waterjet;
 
@@ -41,38 +46,110 @@ uint8_t the_mode = IDLE_MODE;
 
 long last_print = 0;
 
+
+
+
+
+uint16_t pwm_val = 0;
+bool suction_iteration = false;
+bool waterjet_iteration = false;
+
+
+
 void setup() {
   Serial.begin(9600);
   Serial2.begin(9600); // Pi
 
-  pinMode(USER_BUTTON, INPUT);
-  pinMode(WAKE_SWITCH, INPUT);
-  pinMode(SUCTION_SWITCH, INPUT);
-  pinMode(JET_SWITCH, INPUT);
-  pinMode(BATT_LEVEL, INPUT);
+//  pinMode(USER_BUTTON, INPUT);
+//  pinMode(WAKE_SWITCH, INPUT);
+//  pinMode(SUCTION_SWITCH, INPUT);
+//  pinMode(JET_SWITCH, INPUT);
+//  pinMode(BATT_LEVEL, INPUT);
   pinMode(KNOB_PIN, INPUT);
-  pinMode(PRESSURE_SENSOR, INPUT);
-  pinMode(NEO_PIN, OUTPUT);
-  pinMode(HEARTBEAT_LED, OUTPUT);
-  pinMode(HB_LED_LEFT, OUTPUT);
-  pinMode(SUCTION_PWM, OUTPUT);
-  pinMode(JET_PWM, OUTPUT);
-  pinMode(HB_LED_RIGHT, OUTPUT);
-  pinMode(COMMS_LED, OUTPUT);
+//  pinMode(PRESSURE_SENSOR, INPUT);
+//  pinMode(NEO_PIN, OUTPUT);
+//  pinMode(HEARTBEAT_LED, OUTPUT);
+//  pinMode(HB_LED_LEFT, OUTPUT);
+//  pinMode(SUCTION_PWM, OUTPUT);
+//  pinMode(JET_PWM, OUTPUT);
+//  pinMode(HB_LED_RIGHT, OUTPUT);
+//  pinMode(COMMS_LED, OUTPUT);
 
-  pwmInit();
+  //pwmInit();
 
-  // allocate timers
+  // Allow allocation of all timers
   ESP32PWM::allocateTimer(0);
+  ESP32PWM::allocateTimer(1);
+  ESP32PWM::allocateTimer(2);
+  ESP32PWM::allocateTimer(3);
   suction.setPeriodHertz(50); // standard 50hz servo
   waterjet.setPeriodHertz(50); // standard 50hz servo
-  suction.attach(SUCTION_PWM, THRUSTER_REV_MAX, THRUSTER_FWD_MAX);
-  waterjet.attach(JET_PWM, THRUSTER_REV_MAX, THRUSTER_FWD_MAX);
+  suction.attach(SUCTION_PWM, 1000, 2000);
+  waterjet.attach(JET_PWM, 1000, 2000);
+
+
+  // turn off
+  Serial << "suction i: " << 1500 << endl;
+  suction.writeMicroseconds(1500);
+  delay(1000);
+  Serial << "waterjet i: " << 1500 << endl;
+  waterjet.writeMicroseconds(1500);
+  delay(1000);
+
   
-  Serial << "Otter Force One - all systems go" << endl;
+  Serial << "Otter Force One" << endl;
 }
 
 void loop() {
+
+  // a
+  if(suction_iteration) {
+    
+    for(uint16_t i=1600; i<=1800; i+=100) {
+      suction.writeMicroseconds(i);
+      Serial << "suction i: " << i << endl;
+      delay(500);
+    }
+
+    for(uint16_t i=1800; i>=1600; i-=100) {
+      suction.writeMicroseconds(i);
+      Serial << "suction i: " << i << endl;
+      delay(500);
+    }
+
+    // off
+    Serial << "suction i: " << 1500 << endl;
+    suction.writeMicroseconds(1500);
+    delay(1000);
+
+    suction_iteration = false;
+  }
+
+
+  // b
+  if(waterjet_iteration) {
+    for(uint16_t i=1600; i<=1800; i+=100) {
+      waterjet.writeMicroseconds(i);
+      Serial << "waterjet i: " << i << endl;
+      delay(500);
+    }
+
+    for(uint16_t i=1800; i>=1600; i-=100) {
+      waterjet.writeMicroseconds(i);
+      Serial << "waterjet i: " << i << endl;
+      delay(500);
+    }
+
+    // off
+    Serial << "waterjet i: " << 1500 << endl;
+    waterjet.writeMicroseconds(1500);
+    delay(1000);
+    
+    waterjet_iteration = false;
+  }
+
+
+
 
   switch(the_mode) {
     case IDLE_MODE:
@@ -161,10 +238,20 @@ void loop() {
         Serial << "4: knob: water jet fwd" << endl;
         Serial << "5: knob: water jet rev" << endl;
         Serial << "p: print knob" << endl;
+        Serial << "a: suction iteration" << endl;
+        Serial << "b: waterjet iteration" << endl;
+      break;
+      case 'a':
+        suction_iteration = true;
+      break;
+      case 'b':
+        waterjet_iteration = true;
       break;
       case '1':
         Serial << "knob: off" << endl;
         the_mode = KNOB_OFF;
+        suction_iteration = false;
+        waterjet_iteration = false;
       break;
       case '2':
         Serial << "knob: suction fwd" << endl;
