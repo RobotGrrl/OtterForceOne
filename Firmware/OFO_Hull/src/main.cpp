@@ -1,10 +1,16 @@
+// main changes:
+// had to change the file extensions to .cpp
+// moved source files to /src
+// modified the wrapper (consoleIo.cpp)
+
 #include <Arduino.h>
+#include "console.h"
 
 void setup() {
-  // put your setup code here, to run once:
+  ConsoleInit();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  ConsoleProcess();
 }
 

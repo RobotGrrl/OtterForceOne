@@ -19,6 +19,7 @@ static eCommandResult_T ConsoleCommandVer(const char buffer[]);
 static eCommandResult_T ConsoleCommandHelp(const char buffer[]);
 static eCommandResult_T ConsoleCommandParamExampleInt16(const char buffer[]);
 static eCommandResult_T ConsoleCommandParamExampleHexUint16(const char buffer[]);
+static eCommandResult_T ConsoleCommandHello(const char buffer[]);
 
 static const sConsoleCommandTable_T mConsoleCommandTable[] =
 {
@@ -27,6 +28,7 @@ static const sConsoleCommandTable_T mConsoleCommandTable[] =
     {"ver", &ConsoleCommandVer, HELP("Get the version string")},
     {"int", &ConsoleCommandParamExampleInt16, HELP("How to get a signed int16 from params list: int -321")},
     {"u16h", &ConsoleCommandParamExampleHexUint16, HELP("How to get a hex u16 from the params list: u16h aB12")},
+	{"hello", &ConsoleCommandHello, HELP("Says hello")},
 
 	CONSOLE_COMMAND_TABLE_END // must be LAST
 };
@@ -75,6 +77,7 @@ static eCommandResult_T ConsoleCommandParamExampleInt16(const char buffer[])
 	}
 	return result;
 }
+
 static eCommandResult_T ConsoleCommandParamExampleHexUint16(const char buffer[])
 {
 	uint16_t parameterUint16;
@@ -100,6 +103,14 @@ static eCommandResult_T ConsoleCommandVer(const char buffer[])
 	return result;
 }
 
+static eCommandResult_T ConsoleCommandHello(const char buffer[])
+{
+	eCommandResult_T result = COMMAND_SUCCESS;
+	IGNORE_UNUSED_VARIABLE(buffer);
+	ConsoleIoSendString("Hello from Otter Force One");
+	ConsoleIoSendString(STR_ENDLINE);
+	return result;
+}
 
 const sConsoleCommandTable_T* ConsoleCommandsGetTable(void)
 {
